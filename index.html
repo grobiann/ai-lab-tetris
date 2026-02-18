@@ -64,6 +64,19 @@
         <h2 class="label">HOLD</h2>
         <canvas id="hold-canvas" width="120" height="120"></canvas>
       </div>
+      <div class="panel-section audio-section">
+        <h2 class="label">AUDIO</h2>
+        <div class="audio-row">
+          <kbd>M</kbd>
+          <span class="audio-label">Sound</span>
+          <span id="mute-label" class="audio-state">ON</span>
+        </div>
+        <div class="audio-row">
+          <span class="audio-label">Vol</span>
+          <input type="range" id="volume-slider" min="0" max="100" value="50" class="volume-slider">
+          <span id="volume-value" class="audio-state">50</span>
+        </div>
+      </div>
       <div class="panel-section controls-section">
         <h2 class="label">CONTROLS</h2>
         <ul class="controls-list">

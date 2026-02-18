@@ -59,6 +59,146 @@ function dropInterval(level) {
   return Math.max(80, 1000 - (level - 1) * 90);
 }
 
+// ─── Sound Engine ─────────────────────────────────────────────────────────────
+const SoundEngine = (() => {
+  let ctx = null;
+  let muted = false;
+  let volume = 0.5;
+
+  function init() {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+  }
+
+  function play(fn) {
+    if (muted) return;
+    try { init(); fn(ctx); } catch (_) { /* ignore audio errors */ }
+  }
+
+  return {
+    toggleMute() { muted = !muted; return muted; },
+    isMuted() { return muted; },
+    setVolume(v) { volume = Math.max(0, Math.min(1, v)); },
+    getVolume() { return volume; },
+
+    move() {
+      play(c => {
+        const o = c.createOscillator(), g = c.createGain();
+        g.gain.setValueAtTime(0.12 * volume, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.05);
+        o.type = 'square';
+        o.frequency.setValueAtTime(200, c.currentTime);
+        o.connect(g); g.connect(c.destination);
+        o.start(); o.stop(c.currentTime + 0.05);
+      });
+    },
+
+    rotate() {
+      play(c => {
+        const o = c.createOscillator(), g = c.createGain();
+        g.gain.setValueAtTime(0.18 * volume, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.08);
+        o.type = 'sine';
+        o.frequency.setValueAtTime(350, c.currentTime);
+        o.frequency.linearRampToValueAtTime(500, c.currentTime + 0.08);
+        o.connect(g); g.connect(c.destination);
+        o.start(); o.stop(c.currentTime + 0.08);
+      });
+    },
+
+    lock() {
+      play(c => {
+        const bufLen = Math.floor(c.sampleRate * 0.05);
+        const buf = c.createBuffer(1, bufLen, c.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+        const noise = c.createBufferSource();
+        noise.buffer = buf;
+        const filter = c.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1200, c.currentTime);
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.25 * volume, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.05);
+        noise.connect(filter); filter.connect(g); g.connect(c.destination);
+        noise.start(); noise.stop(c.currentTime + 0.05);
+      });
+    },
+
+    hardDrop() {
+      play(c => {
+        const o = c.createOscillator(), g = c.createGain();
+        g.gain.setValueAtTime(0.45 * volume, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.18);
+        o.type = 'sine';
+        o.frequency.setValueAtTime(180, c.currentTime);
+        o.frequency.exponentialRampToValueAtTime(55, c.currentTime + 0.18);
+        o.connect(g); g.connect(c.destination);
+        o.start(); o.stop(c.currentTime + 0.18);
+      });
+    },
+
+    lineClear(count) {
+      play(c => {
+        const freqSets = [[], [440], [440, 554], [440, 554, 659], [440, 554, 659, 880]];
+        (freqSets[count] || freqSets[1]).forEach((freq, i) => {
+          const o = c.createOscillator(), g = c.createGain();
+          const t = c.currentTime + i * 0.07;
+          g.gain.setValueAtTime(0.3 * volume, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+          o.type = count === 4 ? 'square' : 'sine';
+          o.frequency.setValueAtTime(freq, t);
+          o.connect(g); g.connect(c.destination);
+          o.start(t); o.stop(t + 0.2);
+        });
+      });
+    },
+
+    levelUp() {
+      play(c => {
+        [523, 659, 784, 1047].forEach((freq, i) => {
+          const o = c.createOscillator(), g = c.createGain();
+          const t = c.currentTime + i * 0.08;
+          g.gain.setValueAtTime(0.22 * volume, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+          o.type = 'square';
+          o.frequency.setValueAtTime(freq, t);
+          o.connect(g); g.connect(c.destination);
+          o.start(t); o.stop(t + 0.16);
+        });
+      });
+    },
+
+    hold() {
+      play(c => {
+        const o = c.createOscillator(), g = c.createGain();
+        g.gain.setValueAtTime(0.2 * volume, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.12);
+        o.type = 'sine';
+        o.frequency.setValueAtTime(500, c.currentTime);
+        o.frequency.linearRampToValueAtTime(250, c.currentTime + 0.12);
+        o.connect(g); g.connect(c.destination);
+        o.start(); o.stop(c.currentTime + 0.12);
+      });
+    },
+
+    gameOver() {
+      play(c => {
+        [330, 262, 220, 165].forEach((freq, i) => {
+          const o = c.createOscillator(), g = c.createGain();
+          const t = c.currentTime + i * 0.18;
+          g.gain.setValueAtTime(0.3 * volume, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+          o.type = 'sawtooth';
+          o.frequency.setValueAtTime(freq, t);
+          o.connect(g); g.connect(c.destination);
+          o.start(t); o.stop(t + 0.35);
+        });
+      });
+    },
+  };
+})();
+
 // ─── Canvas & DOM ─────────────────────────────────────────────────────────────
 const boardCanvas = document.getElementById('board');
 const ctx = boardCanvas.getContext('2d');
@@ -76,11 +216,14 @@ const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlay-title');
 const overlaySubtitle = document.getElementById('overlay-subtitle');
 const overlayBtn = document.getElementById('overlay-btn');
+const muteLabel = document.getElementById('mute-label');
+const volumeSlider = document.getElementById('volume-slider');
+const volumeValue = document.getElementById('volume-value');
 
 // ─── Game State ───────────────────────────────────────────────────────────────
 let board, current, next, hold;
 let score, highScore, level, lines, combo;
-let canHold, holdUsed;
+let holdUsed;
 let gameRunning, gamePaused, gameOver;
 let lastTime, dropCounter, animId;
 let lockTimer, lockResets;
@@ -145,6 +288,7 @@ function tryRotate(piece, ccw = false) {
     if (!collides(piece, kick, 0, newRot)) {
       piece.x += kick;
       piece.rotation = newRot;
+      SoundEngine.rotate();
       onMoveOrRotate();
       return true;
     }
@@ -193,6 +337,7 @@ function lockPiece() {
   }
   if (topOut) { triggerGameOver(); return; }
 
+  SoundEngine.lock();
   holdUsed = false;
   findAndClearLines();
 }
@@ -226,6 +371,8 @@ function animateClear() {
     clearingRows.sort((a, b) => b - a);
     for (const r of clearingRows) {
       board.splice(r, 1);
+    }
+    for (let i = 0; i < count; i++) {
       board.unshift(new Array(COLS).fill(0));
     }
     clearingRows = [];
@@ -239,7 +386,12 @@ function animateClear() {
     }
     combo++;
     lines += count;
+    const prevLevel = level;
     level = Math.floor(lines / 10) + 1;
+
+    // Sounds
+    SoundEngine.lineClear(count);
+    if (level > prevLevel) SoundEngine.levelUp();
 
     // Notifications
     if (count === 4) addFloatingText('TETRIS!', '#00f5ff');
@@ -277,6 +429,7 @@ function doHold() {
     current = { type: tmp, rotation: 0, x: Math.floor(COLS / 2) - 2, y: 0 };
   }
   lockResets = 0;
+  SoundEngine.hold();
   if (collides(current)) triggerGameOver();
   drawHold();
 }
@@ -485,11 +638,9 @@ function initGame() {
   floatingTexts = [];
   bag = [];
 
+  // FIX: correctly initialize current and next without wasting a bag piece
   refillBag();
-  next = nextFromBag();
   current = nextFromBag();
-  current.x = Math.floor(COLS / 2) - 2;
-  current.y = 0;
   next = nextFromBag();
 
   updateUI();
@@ -504,6 +655,7 @@ function triggerGameOver() {
     localStorage.setItem('tetris-high-score', highScore);
     updateUI();
   }
+  SoundEngine.gameOver();
   cancelAnimationFrame(animId);
   render();
   showOverlay('GAME OVER', `SCORE: ${score.toLocaleString()}`, 'RESTART');
@@ -526,8 +678,8 @@ function togglePause() {
 function hardDrop() {
   const dy = ghostY() - current.y;
   current.y += dy;
-  score += dy * 2;
   updateUI();
+  SoundEngine.hardDrop();
   lockPiece();
 }
 
@@ -546,6 +698,12 @@ function loop(time = 0) {
     lockTimer -= delta;
     if (lockTimer <= 0) {
       lockPiece();
+      // animateClear sets gameRunning=false and restarts the loop itself.
+      // For the no-line-clear path (spawnNext), we must restart the loop here.
+      if (gameRunning && !gameOver) {
+        lastTime = performance.now();
+        animId = requestAnimationFrame(loop);
+      }
       return;
     }
   } else {
@@ -563,29 +721,50 @@ function loop(time = 0) {
 
 // ─── Input ────────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (!gameRunning && !gamePaused && !gameOver) return;
+  // R restarts at any time
+  if (e.code === 'KeyR') {
+    cancelAnimationFrame(animId);
+    startGame();
+    return;
+  }
+
+  // M toggles mute at any time
+  if (e.code === 'KeyM') {
+    const nowMuted = SoundEngine.toggleMute();
+    if (muteLabel) {
+      muteLabel.textContent = nowMuted ? 'MUTED' : 'ON';
+      muteLabel.style.color = nowMuted ? 'var(--red)' : 'var(--cyan)';
+    }
+    return;
+  }
+
+  // FIX: block all other input when game is not active (initial state or game over)
+  if (!gameRunning && !gamePaused) return;
 
   switch (e.code) {
     case 'ArrowLeft':
       e.preventDefault();
-      if (!gamePaused && !collides(current, -1, 0)) { current.x--; onMoveOrRotate(); }
+      if (!gamePaused && !collides(current, -1, 0)) {
+        current.x--;
+        SoundEngine.move();
+        onMoveOrRotate();
+      }
       break;
     case 'ArrowRight':
       e.preventDefault();
-      if (!gamePaused && !collides(current, 1, 0)) { current.x++; onMoveOrRotate(); }
+      if (!gamePaused && !collides(current, 1, 0)) {
+        current.x++;
+        SoundEngine.move();
+        onMoveOrRotate();
+      }
       break;
     case 'ArrowDown':
       e.preventDefault();
-      if (!gamePaused) {
-        if (!collides(current, 0, 1)) {
-          current.y++;
-          score += 1;
-          updateUI();
-          dropCounter = 0;
-          cancelLockTimer();
-        } else {
-          lockPiece();
-        }
+      // FIX: when already grounded, ignore soft drop (let lock delay handle it)
+      if (!gamePaused && !collides(current, 0, 1)) {
+        current.y++;
+        dropCounter = 0;
+        cancelLockTimer();
       }
       break;
     case 'ArrowUp':
@@ -607,10 +786,6 @@ document.addEventListener('keydown', e => {
     case 'KeyP':
       togglePause();
       break;
-    case 'KeyR':
-      cancelAnimationFrame(animId);
-      startGame();
-      break;
   }
 });
 
@@ -618,6 +793,11 @@ document.addEventListener('keydown', e => {
 overlayBtn.addEventListener('click', () => {
   if (gamePaused) togglePause();
   else startGame();
+});
+
+volumeSlider.addEventListener('input', () => {
+  SoundEngine.setVolume(volumeSlider.value / 100);
+  if (volumeValue) volumeValue.textContent = volumeSlider.value;
 });
 
 // ─── Start ────────────────────────────────────────────────────────────────────

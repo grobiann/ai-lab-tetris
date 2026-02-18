@@ -149,13 +149,73 @@ body {
   background: var(--bg-board);
 }
 
-/* ===== Next Piece Canvas ===== */
-#next-canvas {
+/* ===== Next / Hold Piece Canvas ===== */
+#next-canvas,
+#hold-canvas {
   display: block;
   background: var(--bg-board);
   border: 1px solid var(--border);
   border-radius: 4px;
   margin-top: 8px;
+}
+
+/* ===== Audio Section ===== */
+.audio-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.audio-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+}
+
+.audio-label {
+  color: var(--text-dim);
+  min-width: 26px;
+}
+
+.audio-state {
+  color: var(--cyan);
+  font-size: 11px;
+  min-width: 28px;
+  text-align: right;
+}
+
+.volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border-glow);
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--cyan);
+  cursor: pointer;
+  box-shadow: 0 0 4px var(--cyan);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--cyan);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 4px var(--cyan);
 }
 
 /* ===== Controls ===== */
