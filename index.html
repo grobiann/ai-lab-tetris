@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Lab Tetris</title>
+  <meta name="description" content="Classic Tetris game with a modern neon aesthetic. Play in your browser!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Left Panel -->
+    <aside class="panel panel-left">
+      <div class="panel-section">
+        <h2 class="label">SCORE</h2>
+        <div id="score" class="value">0</div>
+      </div>
+      <div class="panel-section">
+        <h2 class="label">HIGH SCORE</h2>
+        <div id="high-score" class="value">0</div>
+      </div>
+      <div class="panel-section">
+        <h2 class="label">LEVEL</h2>
+        <div id="level" class="value">1</div>
+      </div>
+      <div class="panel-section">
+        <h2 class="label">LINES</h2>
+        <div id="lines" class="value">0</div>
+      </div>
+    </aside>
+
+    <!-- Game Board -->
+    <main class="game-wrapper">
+      <h1 class="game-title">TETRIS</h1>
+      <div class="board-container">
+        <canvas id="board" width="300" height="600"></canvas>
+        <!-- Overlay screens -->
+        <div id="overlay" class="overlay hidden">
+          <div class="overlay-content">
+            <div id="overlay-title" class="overlay-title"></div>
+            <div id="overlay-subtitle" class="overlay-subtitle"></div>
+            <button id="overlay-btn" class="btn-start">START</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right Panel -->
+    <aside class="panel panel-right">
+      <div class="panel-section">
+        <h2 class="label">NEXT</h2>
+        <canvas id="next-canvas" width="120" height="120"></canvas>
+      </div>
+      <div class="panel-section controls-section">
+        <h2 class="label">CONTROLS</h2>
+        <ul class="controls-list">
+          <li><kbd>←</kbd><kbd>→</kbd> Move</li>
+          <li><kbd>↑</kbd> Rotate</li>
+          <li><kbd>↓</kbd> Soft Drop</li>
+          <li><kbd>Space</kbd> Hard Drop</li>
+          <li><kbd>P</kbd> Pause</li>
+          <li><kbd>R</kbd> Restart</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
